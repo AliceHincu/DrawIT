@@ -21,6 +21,7 @@ type GLTFResult = GLTF & {
 
 export function FemaleModel(props: JSX.IntrinsicElements['group']) {
   const { nodes, materials } = useGLTF('/femaleBot.glb') as GLTFResult
+  console.log(nodes);
   return (
     <group {...props} dispose={null} scale={[0.1, 0.1, 0.1]}>
       <mesh geometry={nodes.Beta_Surface.geometry} material={materials.Beta_HighLimbsGeoSG3} />

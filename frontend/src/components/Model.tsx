@@ -7,6 +7,7 @@ import * as THREE from 'three'
 import React, { useRef } from 'react'
 import { useGLTF, useAnimations } from '@react-three/drei'
 import { GLTF } from 'three-stdlib'
+import { Bone } from 'three'
 
 type ActionName = 'Armature|mixamo.com|Layer0'
 interface GLTFAction extends THREE.AnimationClip {
@@ -24,16 +25,460 @@ type GLTFResult = GLTF & {
   animations: GLTFAction[];
 }
 
-export function Model(props: JSX.IntrinsicElements['group']) {
+let poseRig = {
+  "RightUpperArm": {
+      "x": 0.07092583400506086,
+      "y": 0.6115875943832204,
+      "z": 0.89079230895846
+  },
+  "RightLowerArm": {
+      "x": 0.3,
+      "y": 0.06304298139776437,
+      "z": 0.8248256209082492
+  },
+  "LeftUpperArm": {
+      "x": -0.16334135882781997,
+      "y": 0.025704189184518833,
+      "z": 0.49782478476025327
+  },
+  "LeftLowerArm": {
+      "x": 0.3,
+      "y": -0.1893719357472298,
+      "z": 0
+  },
+  "RightHand": {
+      "x": 0.13978573965326327,
+      "y": -0.6,
+      "z": 0.9375512409231381
+  },
+  "LeftHand": {
+      "x": -0.31645903056296315,
+      "y": 0.25271460121008765,
+      "z": 0.29062179139160077
+  },
+  "RightUpperLeg": {
+      "x": 0,
+      "y": -0.04387420829534583,
+      "z": 0.03470669328797461,
+      "rotationOrder": "XYZ"
+  },
+  "RightLowerLeg": {
+      "x": -0.19783134345735573,
+      "y": 0,
+      "z": 0,
+      "rotationOrder": "XYZ"
+  },
+  "LeftUpperLeg": {
+      "x": 0.11026987303946965,
+      "y": -0.17369072981922273,
+      "z": 0.28906006429249975,
+      "rotationOrder": "XYZ"
+  },
+  "LeftLowerLeg": {
+      "x": -0.18943688550096233,
+      "y": 0,
+      "z": 0,
+      "rotationOrder": "XYZ"
+  },
+  "Hips": {
+      "position": {
+          "x": 0.05982724428176878,
+          "y": 0,
+          "z": -0.8143022487663486
+      },
+      "worldPosition": {
+          "x": -0.12921588097626888,
+          "y": 0,
+          "z": -2.1598166943424633
+      },
+      "rotation": {
+          "x": 0,
+          "y": -0.5962267662637286,
+          "z": -0.1841353478681009
+      }
+  },
+  "Spine": {
+      "x": 0,
+      "y": -0.38018478696257835,
+      "z": 0.4314103503736993
+  }
+};
+
+// let poseRig = {
+//   "RightUpperArm": {
+//       "x": -0.08085832910999413,
+//       "y": 1.0772584336887925,
+//       "z": -0.9995688235138864
+//   },
+//   "RightLowerArm": {
+//       "x": 0.3,
+//       "y": 0.40125480261429547,
+//       "z": 0
+//   },
+//   "LeftUpperArm": {
+//       "x": 0.07436148393342998,
+//       "y": -1.6133993159570525,
+//       "z": 1.0547008559810855
+//   },
+//   "LeftLowerArm": {
+//       "x": -0.3,
+//       "y": -0.36946160850661053,
+//       "z": 0
+//   },
+//   "RightHand": {
+//       "x": 0.10510119527076377,
+//       "y": 0.6,
+//       "z": -1.0349087646667634
+//   },
+//   "LeftHand": {
+//       "x": 0.17153249633219023,
+//       "y": 0.6,
+//       "z": 0.9143461011751994
+//   },
+//   "RightUpperLeg": {
+//       "x": 0.03851083149780871,
+//       "y": 0.1040161814070173,
+//       "z": -0.001438830708794997,
+//       "rotationOrder": "XYZ"
+//   },
+//   "RightLowerLeg": {
+//       "x": -0.4135338628888617,
+//       "y": 0,
+//       "z": 0,
+//       "rotationOrder": "XYZ"
+//   },
+//   "LeftUpperLeg": {
+//       "x": 0.04321485591149682,
+//       "y": -0.11033530655512068,
+//       "z": -0.17991943368405852,
+//       "rotationOrder": "XYZ"
+//   },
+//   "LeftLowerLeg": {
+//       "x": -0.3737501646850426,
+//       "y": 0,
+//       "z": 0,
+//       "rotationOrder": "XYZ"
+//   },
+//   "Hips": {
+//       "position": {
+//           "x": 0.0818419814109802,
+//           "y": 0,
+//           "z": -0.6063063574727247
+//       },
+//       "worldPosition": {
+//           "x": -0.07296464818738625,
+//           "y": 0,
+//           "z": -0.8915308125420954
+//       },
+//       "rotation": {
+//           "x": 0,
+//           "y": -0.08661526748438841,
+//           "z": -0.05210175878105352
+//       }
+//   },
+//   "Spine": {
+//       "x": 0,
+//       "y": -0.21344804158136685,
+//       "z": 0.011104887644839762
+//   }
+// };
+
+
+interface Bones {
+  Hips: Bone,
+  Chest: Bone,
+  LeftHand: Bone,
+  LeftLowerArm: Bone,
+  LeftUpperArm: Bone,
+  LeftUpperLeg: Bone,
+  LeftLowerLeg: Bone,
+  RightHand: Bone,
+  RightLowerArm: Bone,
+  RightUpperArm: Bone,
+  RightUpperLeg: Bone,
+  RightLowerLeg: Bone,
+  Spine: Bone,
+  [key: string]: Bone;
+}
+
+export function Model(props: any) {
   const group = useRef<THREE.Group>()
   const { nodes, materials, animations } = useGLTF('/model.glb') as GLTFResult
+  console.log(nodes);
+  console.log("inside model, ", props.poseRig);
   const { actions } = useAnimations(animations, group)
+  let bones:Bones = {
+    Hips: new Bone(),
+    Chest: new Bone(),
+    LeftHand: new Bone(),
+    LeftLowerArm: new Bone(),
+    LeftUpperArm: new Bone(),
+    LeftUpperLeg: new Bone(),
+    LeftLowerLeg: new Bone(),
+    RightHand: new Bone(),
+    RightLowerArm: new Bone(),
+    RightUpperArm: new Bone(),
+    RightUpperLeg: new Bone(),
+    RightLowerLeg: new Bone(),
+    Spine: new Bone(),
+    Spine1: new Bone(),
+    Spine2: new Bone(),
+  };
+
+  const mapSkeleton = () => {
+    for(let child of nodes.Ch36.skeleton.bones) {  
+        if (child.name == 'mixamorig1Hips')         { bones['Hips'] = child  }
+        // if (child.name == 'Chest')        { bones['Chest'] = child }
+  
+        if (child.name == 'mixamorig1LeftHand')     { bones['LeftHand']     = child }
+        if (child.name == 'mixamorig1LeftForeArm')  { bones['LeftLowerArm'] = child }
+        if (child.name == 'mixamorig1LeftShoulder')      { bones['LeftUpperArm'] = child }
+        if (child.name == 'mixamorig1LeftUpLeg')    { bones['LeftUpperLeg'] = child }
+        if (child.name == 'mixamorig1LeftLeg')      { bones['LeftLowerLeg'] = child }
+  
+        if (child.name == 'mixamorig1RightHand')    { bones['RightHand']     = child }
+        if (child.name == 'mixamorig1RightForeArm') { bones['RightLowerArm'] = child }
+        if (child.name == 'mixamorig1RightShoulder')     { bones['RightUpperArm'] = child }
+        if (child.name == 'mixamorig1RightUpLeg')   { bones['RightUpperLeg'] = child }
+        if (child.name == 'mixamorig1RightLeg')     { bones['RightLowerLeg'] = child }
+        
+        if (child.name == 'mixamorig1Spine')        { bones['Spine'] = child }
+        if (child.name == 'mixamorig1Spine1')        { bones['Spine1'] = child }
+        if (child.name == 'mixamorig1Spine2')        { bones['Spine2'] = child }
+    }
+  }
+
+  mapSkeleton()
+
+  const rigRotation = (name: string, rotation = { x: 0, y: 0, z: 0 }, dampener = 1, lerpAmount = 0.3) => {
+    // if (!currentVrm) {
+    //     return;
+    // }
+    const Part = bones[name];
+    if (!Part) {
+        return;
+    }
+
+
+    let euler = new THREE.Euler(
+        -rotation.x * dampener,
+        rotation.z * dampener,
+        -rotation.y * dampener,
+        "XYZ"
+    );
+    let quaternion = new THREE.Quaternion().setFromEuler(euler);
+    Part.quaternion.slerp(quaternion, lerpAmount); // interpolate
+};
+
+const rigPosition = (name: string, position = { x: 0, y: 0, z: 0 }, dampener = 1, lerpAmount = 0.3) => {
+  // if (!currentVrm) {
+  //     return;
+  // }
+  const Part = bones[name];
+  if (!Part) {
+      return;
+  }
+  let vector = new THREE.Vector3(position.x * dampener, position.y * dampener, position.z * dampener);
+  Part.position.lerp(vector, lerpAmount); // interpolate
+};
+  // Animate Rotation Helper function
+
+  // hips
+  // rigRotation("Hips", poseRig.Hips.rotation, 0.7);
+  // rigPosition('Hips', {
+  //   x: -poseRig.Hips.position.x,
+  //   y: poseRig.Hips.position.y + 1, 
+  //   z: -poseRig.Hips.position.z 
+  // }, 1, 0.07)
+  nodes.Ch36.skeleton.bones[0].rotation.x = poseRig.Hips.rotation.x;
+  nodes.Ch36.skeleton.bones[0].rotation.y = poseRig.Hips.rotation.y;
+  nodes.Ch36.skeleton.bones[0].rotation.z = poseRig.Hips.rotation.z;
+  // // spine
+  // nodes.Ch36.skeleton.bones[1].rotation.x = poseRig.Spine.x;
+  // nodes.Ch36.skeleton.bones[1].rotation.y = poseRig.Spine.y;
+  // nodes.Ch36.skeleton.bones[1].rotation.z = poseRig.Spine.z;
+
+  // rigRotation("Hips", poseRig.Hips.rotation, 0.7);
+  // rigPosition(
+  //     "Hips",
+  //     {
+  //         x: poseRig.Hips.position.x, // Reverse direction
+  //         y: poseRig.Hips.position.y, // Add a bit of height
+  //         z: poseRig.Hips.position.z, // Reverse direction
+  //     },
+  //     1,
+  //     0.07
+  // );
+  rigRotation("Spine", poseRig.Spine, 0.45, 0.4);
+  rigRotation("Spine1", poseRig.Spine, 0.25, 0.4);
+  rigRotation("Spine2", poseRig.Spine, 0.25, 0.4);
+
+
+  // nodes.Ch36.skeleton.bones[32].rotation.x = -poseRig.RightUpperArm.x;
+  // nodes.Ch36.skeleton.bones[32].rotation.y = -poseRig.RightUpperArm.y;
+  // nodes.Ch36.skeleton.bones[32].rotation.z = -poseRig.RightUpperArm.z;
+  rigRotation("RightUpperArm", poseRig.RightUpperArm, 1, 0.4);
+  // nodes.Ch36.skeleton.bones[33].rotation.x = -poseRig.RightLowerArm.x;
+  // nodes.Ch36.skeleton.bones[33].rotation.y = -poseRig.RightLowerArm.y;
+  // nodes.Ch36.skeleton.bones[33].rotation.z = -poseRig.RightLowerArm.z;
+  rigRotation("RightLowerArm", poseRig.RightLowerArm, 1, 0.4);
+
+  // nodes.Ch36.skeleton.bones[8].rotation.x = poseRig.LeftUpperArm.x;
+  // nodes.Ch36.skeleton.bones[8].rotation.y = -poseRig.LeftUpperArm.y;
+  // nodes.Ch36.skeleton.bones[8].rotation.z = poseRig.LeftUpperArm.z;
+  rigRotation("LeftUpperArm", poseRig.LeftUpperArm, 1, 0.4);
+  // nodes.Ch36.skeleton.bones[9].rotation.x = poseRig.LeftLowerArm.x;
+  // nodes.Ch36.skeleton.bones[9].rotation.y = -poseRig.LeftLowerArm.y;
+  // nodes.Ch36.skeleton.bones[9].rotation.z = poseRig.LeftLowerArm.z;
+  rigRotation("LeftLowerArm", poseRig.LeftLowerArm, 1, 0.4);
+
+  // rigRotation("LeftUpperLeg", poseRig.LeftUpperLeg, 1, 0.3);
+  // rigRotation("LeftLowerLeg", poseRig.LeftLowerLeg, 1, 0.3);
+  // rigRotation("RightUpperLeg", poseRig.RightUpperLeg, 1, 0.3);
+  // rigRotation("RightLowerLeg", poseRig.RightLowerLeg, 1, 0.3);
+  // left shoulder
+  // let euler = new THREE.Euler(
+  //   poseRig.LeftUpperArm.x,
+  //   poseRig.LeftUpperArm.y,
+  //   poseRig.LeftUpperArm.z,
+  //   "XYZ"
+  // );
+  // let quaternion = new THREE.Quaternion().setFromEuler(euler);
+  // nodes.Ch36.skeleton.bones[8].quaternion.slerp(quaternion, 0.3);
+  // nodes.Ch36.skeleton.bones[8].rotation.x = -poseRig.LeftUpperArm.x;
+  // nodes.Ch36.skeleton.bones[8].rotation.y = poseRig.LeftUpperArm.z;
+  // nodes.Ch36.skeleton.bones[8].rotation.z = -poseRig.LeftUpperArm.y;
+  // x :  riggedPose.RightLowerArm.x,
+  //    y :  riggedPose.RightLowerArm.z,
+  //    z :  -riggedPose.RightLowerArm.y,
+  // left elbow
+  // euler = new THREE.Euler(
+  //   poseRig.LeftLowerArm.x,
+  //   poseRig.LeftLowerArm.y,
+  //   poseRig.LeftLowerArm.z,
+  //   "XYZ"
+  // );
+  // quaternion = new THREE.Quaternion().setFromEuler(euler);
+  // nodes.Ch36.skeleton.bones[9].quaternion.slerp(quaternion, 0.3);
+  // nodes.Ch36.skeleton.bones[9].rotation.x = -poseRig.LeftLowerArm.x;
+  // nodes.Ch36.skeleton.bones[9].rotation.y = poseRig.LeftLowerArm.z;
+  // nodes.Ch36.skeleton.bones[9].rotation.z = -poseRig.LeftLowerArm.y;
+  // // left hand
+  // nodes.Ch36.skeleton.bones[10].rotation.x = -poseRig.LeftHand.x;
+  // nodes.Ch36.skeleton.bones[10].rotation.y = poseRig.LeftHand.z;
+  // nodes.Ch36.skeleton.bones[10].rotation.z = -poseRig.LeftHand.y;
+
+  // // right shoulder
+  // euler = new THREE.Euler(
+  //   poseRig.RightUpperArm.x,
+  //   poseRig.RightUpperArm.y,
+  //   poseRig.RightUpperArm.z,
+  //   "XYZ"
+  // );
+  // quaternion = new THREE.Quaternion().setFromEuler(euler);
+  // nodes.Ch36.skeleton.bones[32].quaternion.slerp(quaternion, 0.3);
+  // nodes.Ch36.skeleton.bones[32].rotation.x = poseRig.RightUpperArm.x;
+  // nodes.Ch36.skeleton.bones[32].rotation.y = poseRig.RightUpperArm.y;
+  // nodes.Ch36.skeleton.bones[32].rotation.z = poseRig.RightUpperArm.z;
+  // // right elbow
+  // nodes.Ch36.skeleton.bones[33].rotation.x = poseRig.RightLowerArm.x;
+  // nodes.Ch36.skeleton.bones[33].rotation.y = poseRig.RightLowerArm.y;
+  // nodes.Ch36.skeleton.bones[33].rotation.z = poseRig.RightLowerArm.z;
+  // // right hand
+  // nodes.Ch36.skeleton.bones[34].rotation.x = poseRig.RightHand.x;
+  // nodes.Ch36.skeleton.bones[34].rotation.y = poseRig.RightHand.y;
+  // nodes.Ch36.skeleton.bones[34].rotation.z = poseRig.RightHand.z;
+// const rigRotation = (name:string, rotation = { x: 0, y: 0, z: 0 }, dampener = 1, lerpAmount = 0.3) => {
+//     if (!nodes) {
+//         return;
+//     }
+
+//     const Part = null;
+//     let index = 0;
+//     for(let bone of nodes.Ch36.skeleton.bones) {
+//       if(bone["name"] === name) {
+//         break;
+//       }
+//       index ++;
+//     }
+    
+//     if (!Part) {
+//         return;
+//     }
+
+//     let euler = new THREE.Euler(
+//         rotation.x * dampener,
+//         rotation.y * dampener,
+//         rotation.z * dampener,
+//         rotation.rotationOrder || "XYZ"
+//     );
+//     let quaternion = new THREE.Quaternion().setFromEuler(euler);
+//     Part.quaternion.slerp(quaternion, lerpAmount); // interpolate
+// };
+
+// // Animate Position Helper Function
+// const rigPosition = (name:string, position = { x: 0, y: 0, z: 0 }, dampener = 1, lerpAmount = 0.3) => {
+//     if (!currentVrm) {
+//         return;
+//     }
+//     const Part = currentVrm.humanoid.getBoneNode(THREE.VRMSchema.HumanoidBoneName[name]);
+//     if (!Part) {
+//         return;
+//     }
+//     let vector = new THREE.Vector3(position.x * dampener, position.y * dampener, position.z * dampener);
+//     Part.position.lerp(vector, lerpAmount); // interpolate
+// };
+
+//   let dampener = 1;
+//   let lerpAmount = 0.7;
+//   let rotation = props.poseRig.Hips.rotation;
+//   // rigRotation("Hips", riggedPose.Hips.rotation, 0.7);
+//   let euler = new THREE.Euler(
+//       rotation.x * dampener,
+//       rotation.y * dampener,
+//       rotation.z * dampener,
+//       rotation.rotationOrder || "XYZ"
+//   );
+//   let quaternion = new THREE.Quaternion().setFromEuler(euler);
+//   console.log("before", nodes.Ch36.skeleton.bones[0])
+//   nodes.Ch36.skeleton.bones[0].quaternion.slerp(quaternion, lerpAmount); // interpolate
+//   console.log("after", nodes.Ch36.skeleton.bones[0])
+
+//   lerpAmount = 0.3;
+//   rotation = props.poseRig.RightUpperArm;
+//   euler = new THREE.Euler(
+//     rotation.x * dampener,
+//     rotation.y * dampener,
+//     rotation.z * dampener,
+//     rotation.rotationOrder || "XYZ"
+// );
+//   quaternion = new THREE.Quaternion().setFromEuler(euler);
+//   nodes.Ch36.skeleton.bones[31].quaternion.slerp(quaternion, lerpAmount); 
+  // rigRotation("RightUpperArm", props.poseRig.RightUpperArm, 1, 0.3);
+  // rigRotation("RightLowerArm", props.poseRig.RightLowerArm, 1, 0.3);
+  // rigPosition(
+  //     "Hips",
+  //     {
+  //         x: riggedPose.Hips.position.x, // Reverse direction
+  //         y: riggedPose.Hips.position.y + 1, // Add a bit of height
+  //         z: -riggedPose.Hips.position.z, // Reverse direction
+  //     },
+  //     1,
+  //     0.07
+  // );
+  // let position = {
+  //           x: props.poseRig.Hips.position.x, // Reverse direction
+  //           y: props.poseRig.Hips.position.y + 1, // Add a bit of height
+  //           z: -props.poseRig.Hips.position.z, // Reverse direction
+  // };
+  // let vector = new THREE.Vector3(position.x * dampener, position.y * dampener, position.z * dampener);
+  // nodes.Ch36.skeleton.bones[0].position.lerp(vector, lerpAmount); // interpolate
   
   return (
     // @ts-ignore
     <group ref={group} {...props} dispose={null}>
       <group name="Scene">
-        <group name="Armature" rotation={[Math.PI / 2, 0, 0]} scale={0.01}>
+        <group name="Armature" rotation={[0, 0, 0]} scale={0.1}>
           <primitive object={nodes.mixamorig1Hips} />
           <skinnedMesh name="Ch36" geometry={nodes.Ch36.geometry} material={materials.Ch36_Body} skeleton={nodes.Ch36.skeleton} />
         </group>
