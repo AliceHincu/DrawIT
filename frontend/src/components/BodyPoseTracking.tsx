@@ -127,7 +127,8 @@ export const BodyPoseTracking = () => {
     let leftHandlm = results.leftHandLandmarks;
     
     console.log("here");
-    let {leftShoulder, rightShoulder, neck, leftClavicle, rightClavicle, leftHip, rightHip, hip, spine, chest, middleSpine} = findPoseCoordinates(poselm);
+    //let {leftShoulder, rightShoulder, neck, leftClavicle, rightClavicle, leftHip, rightHip, hip, spine, chest, middleSpine} = findPoseCoordinates(poselm);
+    let landmarks = findPoseCoordinates(poselm);
     console.log(results);
 
     const imageWidth = 408;
@@ -151,39 +152,12 @@ export const BodyPoseTracking = () => {
         ctx.drawImage(results.image, 0, 0, imageWidth, imageHeight);
 
         ctx.globalCompositeOperation = "source-over";
-        ctx.beginPath();
-        ctx.arc(scale([0, 1], [0, imageWidth])(leftShoulder.x), scale([0, 1], [0, imageHeight])(leftShoulder.y), 3, 0, 2 * Math.PI, false);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.arc(scale([0, 1], [0, imageWidth])(rightShoulder.x), scale([0, 1], [0, imageHeight])(rightShoulder.y), 3, 0, 2 * Math.PI, false);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.arc(scale([0, 1], [0, imageWidth])(neck.x), scale([0, 1], [0, imageHeight])(neck.y), 3, 0, 2 * Math.PI, false);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.arc(scale([0, 1], [0, imageWidth])(leftClavicle.x), scale([0, 1], [0, imageHeight])(leftClavicle.y), 3, 0, 2 * Math.PI, false);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.arc(scale([0, 1], [0, imageWidth])(rightClavicle.x), scale([0, 1], [0, imageHeight])(rightClavicle.y), 3, 0, 2 * Math.PI, false);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.arc(scale([0, 1], [0, imageWidth])(hip.x), scale([0, 1], [0, imageHeight])(hip.y), 3, 0, 2 * Math.PI, false);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.arc(scale([0, 1], [0, imageWidth])(leftHip.x), scale([0, 1], [0, imageHeight])(leftHip.y), 3, 0, 2 * Math.PI, false);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.arc(scale([0, 1], [0, imageWidth])(rightHip.x), scale([0, 1], [0, imageHeight])(rightHip.y), 3, 0, 2 * Math.PI, false);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.arc(scale([0, 1], [0, imageWidth])(spine.x), scale([0, 1], [0, imageHeight])(spine.y), 1, 0, 2 * Math.PI, false);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.arc(scale([0, 1], [0, imageWidth])(chest.x), scale([0, 1], [0, imageHeight])(chest.y), 1, 0, 2 * Math.PI, false);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.arc(scale([0, 1], [0, imageWidth])(middleSpine.x), scale([0, 1], [0, imageHeight])(middleSpine.y), 1, 0, 2 * Math.PI, false);
-        ctx.stroke();
+        for(let landmark of landmarks) {
+          ctx.beginPath();
+          ctx.arc(scale([0, 1], [0, imageWidth])(landmark.position.x), scale([0, 1], [0, imageHeight])(landmark.position.y), 3, 0, 2 * Math.PI, false);
+          ctx.stroke();
+        }
+        
         // ctx.globalCompositeOperation = "source-over";
         // drawConnectors(ctx, results.poseLandmarks, holistics.POSE_CONNECTIONS, { color: '#C0C0C070', lineWidth: 4 });
         // drawLandmarks(ctx, results.poseLandmarks, { color: '#FF0000', lineWidth: 2 });
