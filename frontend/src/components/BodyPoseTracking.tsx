@@ -1,22 +1,22 @@
-import React, { Suspense, useRef } from "react"
-import { Canvas } from "@react-three/fiber"
-import { FemaleModel } from "./FemaleBot"
-import { Model } from "./Model"
-import { Stats, OrbitControls, Bounds } from '@react-three/drei'
-import { useState, useEffect } from 'react';
-import { Holistic } from "@mediapipe/holistic"
-import '@tensorflow/tfjs-backend-webgl';
-import { useWindowDimensions } from "../utils/DimensionUtil"
-import { ImageUploader } from "./image-uploader/ImageUploader"
+import React, { Suspense, useRef } from "react";
+import { Canvas } from "@react-three/fiber";
+import { FemaleModel } from "./FemaleBot";
+import { Model } from "./Model";
+import { Stats, OrbitControls, Bounds } from "@react-three/drei";
+import { useState, useEffect } from "react";
+import { Holistic } from "@mediapipe/holistic";
+import "@tensorflow/tfjs-backend-webgl";
+import { useWindowDimensions } from "../utils/DimensionUtil";
+import { ImageUploader } from "./image-uploader/ImageUploader";
 import { Face, Pose, Hand, TPose } from "kalidokit";
-import { Model2 } from "./Model2"
-import { drawConnectors, drawLandmarks } from '@mediapipe/drawing_utils';
-import * as holistics from '@mediapipe/holistic';
-import { findPoseCoordinates } from "../utils/mediapipeToModel/ModelCoords"
+import { Model2 } from "./Model2";
+import { drawConnectors, drawLandmarks } from "@mediapipe/drawing_utils";
+import * as holistics from "@mediapipe/holistic";
+import { findPoseCoordinates } from "../utils/mediapipeToModel/ModelCoords";
 
 declare global {
   interface Window {
-    drawConnectors:any;
+    drawConnectors: any;
   }
 }
 
@@ -27,97 +27,96 @@ export const BodyPoseTracking = () => {
   const connect = window.drawConnectors;
 
   const { height, width } = useWindowDimensions();
-  const aspect = width/height;
+  const aspect = width / height;
   const [isLoaded, setIsLoaded] = useState(true);
   const [rigs, setRigs] = useState<TPose>();
 
   const [imageUploadUrl, setImageUploadUrl] = useState<string>("ballerina.jpg");
 
   let poseRig = {
-    "RightUpperArm": {
-        "x": 0.07092583400506086,
-        "y": 0.6115875943832204,
-        "z": 0.89079230895846
+    RightUpperArm: {
+      x: 0.07092583400506086,
+      y: 0.6115875943832204,
+      z: 0.89079230895846,
     },
-    "RightLowerArm": {
-        "x": 0.3,
-        "y": 0.06304298139776437,
-        "z": 0.8248256209082492
+    RightLowerArm: {
+      x: 0.3,
+      y: 0.06304298139776437,
+      z: 0.8248256209082492,
     },
-    "LeftUpperArm": {
-        "x": -0.16334135882781997,
-        "y": 0.025704189184518833,
-        "z": 0.49782478476025327
+    LeftUpperArm: {
+      x: -0.16334135882781997,
+      y: 0.025704189184518833,
+      z: 0.49782478476025327,
     },
-    "LeftLowerArm": {
-        "x": 0.3,
-        "y": -0.1893719357472298,
-        "z": 0
+    LeftLowerArm: {
+      x: 0.3,
+      y: -0.1893719357472298,
+      z: 0,
     },
-    "RightHand": {
-        "x": 0.13978573965326327,
-        "y": -0.6,
-        "z": 0.9375512409231381
+    RightHand: {
+      x: 0.13978573965326327,
+      y: -0.6,
+      z: 0.9375512409231381,
     },
-    "LeftHand": {
-        "x": -0.31645903056296315,
-        "y": 0.25271460121008765,
-        "z": 0.29062179139160077
+    LeftHand: {
+      x: -0.31645903056296315,
+      y: 0.25271460121008765,
+      z: 0.29062179139160077,
     },
-    "RightUpperLeg": {
-        "x": 0,
-        "y": -0.04387420829534583,
-        "z": 0.03470669328797461,
-        "rotationOrder": "XYZ"
+    RightUpperLeg: {
+      x: 0,
+      y: -0.04387420829534583,
+      z: 0.03470669328797461,
+      rotationOrder: "XYZ",
     },
-    "RightLowerLeg": {
-        "x": -0.19783134345735573,
-        "y": 0,
-        "z": 0,
-        "rotationOrder": "XYZ"
+    RightLowerLeg: {
+      x: -0.19783134345735573,
+      y: 0,
+      z: 0,
+      rotationOrder: "XYZ",
     },
-    "LeftUpperLeg": {
-        "x": 0.11026987303946965,
-        "y": -0.17369072981922273,
-        "z": 0.28906006429249975,
-        "rotationOrder": "XYZ"
+    LeftUpperLeg: {
+      x: 0.11026987303946965,
+      y: -0.17369072981922273,
+      z: 0.28906006429249975,
+      rotationOrder: "XYZ",
     },
-    "LeftLowerLeg": {
-        "x": -0.18943688550096233,
-        "y": 0,
-        "z": 0,
-        "rotationOrder": "XYZ"
+    LeftLowerLeg: {
+      x: -0.18943688550096233,
+      y: 0,
+      z: 0,
+      rotationOrder: "XYZ",
     },
-    "Hips": {
-        "position": {
-            "x": 0.05982724428176878,
-            "y": 0,
-            "z": -0.8143022487663486
-        },
-        "worldPosition": {
-            "x": -0.12921588097626888,
-            "y": 0,
-            "z": -2.1598166943424633
-        },
-        "rotation": {
-            "x": 0,
-            "y": -0.5962267662637286,
-            "z": -0.1841353478681009
-        }
+    Hips: {
+      position: {
+        x: 0.05982724428176878,
+        y: 0,
+        z: -0.8143022487663486,
+      },
+      worldPosition: {
+        x: -0.12921588097626888,
+        y: 0,
+        z: -2.1598166943424633,
+      },
+      rotation: {
+        x: 0,
+        y: -0.5962267662637286,
+        z: -0.1841353478681009,
+      },
     },
-    "Spine": {
-        "x": 0,
-        "y": -0.38018478696257835,
-        "z": 0.4314103503736993
-    }
-};
-  const
-  scale = (fromRange: any, toRange: any) => {
-      const d = (toRange[1] - toRange[0]) / (fromRange[1] - fromRange[0]);
-      return (from: number) =>  (from - fromRange[0]) * d + toRange[0];
+    Spine: {
+      x: 0,
+      y: -0.38018478696257835,
+      z: 0.4314103503736993,
+    },
+  };
+  const scale = (fromRange: any, toRange: any) => {
+    const d = (toRange[1] - toRange[0]) / (fromRange[1] - fromRange[0]);
+    return (from: number) => (from - fromRange[0]) * d + toRange[0];
   };
 
-  const onResults = async (results: any) =>{
+  const onResults = async (results: any) => {
     // do something with prediction results
     // landmark names may change depending on TFJS/Mediapipe model version
     let facelm = results.faceLandmarks;
@@ -125,7 +124,7 @@ export const BodyPoseTracking = () => {
     let poselm3D = results.za;
     let rightHandlm = results.rightHandLandmarks;
     let leftHandlm = results.leftHandLandmarks;
-    
+
     console.log("here");
     //let {leftShoulder, rightShoulder, neck, leftClavicle, rightClavicle, leftHip, rightHip, hip, spine, chest, middleSpine} = findPoseCoordinates(poselm);
     let landmarks = findPoseCoordinates(poselm);
@@ -139,7 +138,7 @@ export const BodyPoseTracking = () => {
       canvasRef.current.height = imageHeight;
 
       const ctx = canvasRef.current.getContext("2d");
-      if(ctx) {
+      if (ctx) {
         // ctx.save();
 
         ctx.clearRect(0, 0, imageWidth, imageHeight);
@@ -152,12 +151,20 @@ export const BodyPoseTracking = () => {
         ctx.drawImage(results.image, 0, 0, imageWidth, imageHeight);
 
         ctx.globalCompositeOperation = "source-over";
-        for(let landmark of landmarks) {
+        for (let landmark of landmarks) {
           ctx.beginPath();
-          ctx.arc(scale([0, 1], [0, imageWidth])(landmark.position.x), scale([0, 1], [0, imageHeight])(landmark.position.y), 3, 0, 2 * Math.PI, false);
+          ctx.arc(
+            scale([0, 1], [0, imageWidth])(landmark.position.x),
+            scale([0, 1], [0, imageHeight])(landmark.position.y),
+            3,
+            0,
+            2 * Math.PI,
+            false
+          );
           ctx.stroke();
         }
-        
+
+        //test from diff laptop
         // ctx.globalCompositeOperation = "source-over";
         // drawConnectors(ctx, results.poseLandmarks, holistics.POSE_CONNECTIONS, { color: '#C0C0C070', lineWidth: 4 });
         // drawLandmarks(ctx, results.poseLandmarks, { color: '#FF0000', lineWidth: 2 });
@@ -177,7 +184,7 @@ export const BodyPoseTracking = () => {
     }
     // console.log(poselm);
     // console.log(poselm3D);
-  
+
     // let faceRig = Kalidokit.Face.solve(facelm,{runtime:'mediapipe',video:HTMLVideoElement})
 
     // let poseRig = Pose.solve(poselm3D,poselm,{runtime:'mediapipe'})
@@ -188,7 +195,7 @@ export const BodyPoseTracking = () => {
     // let leftHandRig = Kalidokit.Hand.solve(leftHandlm,"Left")
     // setIsLoaded(true);
   };
-  
+
   // let image = new Image();
   // image.src = "ballerina.jpg";
 
@@ -196,10 +203,12 @@ export const BodyPoseTracking = () => {
   image.src = imageUploadUrl;
 
   useEffect(() => {
-    const holistic = new Holistic({locateFile: (file) => {
-      return `https://cdn.jsdelivr.net/npm/@mediapipe/holistic/${file}`;
-    }});
-  
+    const holistic = new Holistic({
+      locateFile: (file) => {
+        return `https://cdn.jsdelivr.net/npm/@mediapipe/holistic/${file}`;
+      },
+    });
+
     holistic.setOptions({
       modelComplexity: 1,
       smoothLandmarks: true,
@@ -207,16 +216,16 @@ export const BodyPoseTracking = () => {
       smoothSegmentation: true,
       refineFaceLandmarks: true,
       minDetectionConfidence: 0.5,
-      minTrackingConfidence: 0.5
+      minTrackingConfidence: 0.5,
     });
-  
+
     holistic.onResults(onResults);
-  
+
     image.onload = async (ev) => {
       await holistic.send({
-        image: image
+        image: image,
       });
-    }
+    };
   });
 
   // const onChange = (imageList: any, addUpdateIndex: any) => {
@@ -230,9 +239,9 @@ export const BodyPoseTracking = () => {
   const imageUploaded = (imageSrc: string) => {
     setIsLoaded(false);
     setImageUploadUrl(imageSrc);
-  }
-  
-  return(
+  };
+
+  return (
     <>
       <ImageUploader callback={imageUploaded}></ImageUploader>
       {isLoaded ? "Loaded" : "isLoading..."}
@@ -247,11 +256,11 @@ export const BodyPoseTracking = () => {
           right: 0,
           textAlign: "center",
           width: 1280,
-          height: 900
+          height: 900,
         }}
         id="myCanvas"
       />
-       {/* <Canvas style={{ height: '100vh' }} 
+      {/* <Canvas style={{ height: '100vh' }} 
         camera={{position: [0, 15, 50], fov: 60, aspect: aspect}}>
           <ambientLight /> 
         <Suspense fallback={null}>
@@ -262,5 +271,5 @@ export const BodyPoseTracking = () => {
       </Canvas>  */}
       <div>Hi!</div>
     </>
-  )
-}
+  );
+};
