@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Suspense } from "react";
 import { Canvas } from "@react-three/fiber";
 import { FemaleModel } from "./FemaleBot";
 import { Model } from "./Model";
@@ -10,22 +10,28 @@ import { useWindowDimensions } from "../utils/DimensionUtil";
 import { ImageUploader } from "./image-uploader/ImageUploader";
 import { CanvasLandmarks } from "./canvas/CanvasLandmarks";
 import { ResultsHolistic } from "../utils/ModelInterfaces";
+import { findPoseRotation } from "../utils/mediapipeToModel/ModelCoords";
+// import { findPoseRotation } from "../utils/mediapipeToModel/ModelCoords";
 
 export const BodyPoseTracking = () => {
   const [
     resultMediapipe,
     setResultMediapipe,
   ] = useState<ResultsHolistic | null>(null);
+  const [rotation, setRotation] = useState({});
   const [imageUploadUrl, setImageUploadUrl] = useState<string>("ballerina.jpg");
   const [isLoaded, setIsLoaded] = useState(false);
+  const [rotations, setRotations] = useState({});
 
   const { height, width } = useWindowDimensions();
+  const aspect = width / height;
 
   const onResults = async (results: any) => {
     // do something with prediction results. Can't use Results interface because "za" is not there.
     // landmark names may change depending on TFJS/Mediapipe model version
     // console.log(results);
     setResultMediapipe(results);
+    setRotations(findPoseRotation(results.poseLandmarks, results.za));
     setIsLoaded(true);
   };
 
@@ -72,15 +78,19 @@ export const BodyPoseTracking = () => {
         landmarks={resultMediapipe}
         width={width}
       ></CanvasLandmarks>
-      {/* <Canvas style={{ height: '100vh' }} 
-        camera={{position: [0, 15, 50], fov: 60, aspect: aspect}}>
-          <ambientLight /> 
+
+      <Canvas
+        style={{ height: "100vh" }}
+        // camera={{ position: [0, 30, 20], fov: 60, aspect: aspect }}
+      >
+        <ambientLight />
         <Suspense fallback={null}>
-          {isLoaded ? <Model/> : "Model Loading..."}
+          {isLoaded ? <Model rotations={rotations} /> : "Model Loading..."}
         </Suspense>
-        <OrbitControls makeDefault/>
-          <Stats />
-      </Canvas>  */}
+        <OrbitControls makeDefault />
+        <Stats />
+      </Canvas>
+
       <div>Hi!</div>
     </>
   );

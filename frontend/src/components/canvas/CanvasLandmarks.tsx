@@ -18,6 +18,7 @@ const draw = (
   image: HTMLImageElement,
   landmarks: any
 ) => {
+  console.log(landmarks);
   if (!landmarks) {
     return;
   }
@@ -36,11 +37,12 @@ const draw = (
 
   context.globalCompositeOperation = "source-over";
   const poseCoords = findPoseCoordinates(landmarks.poseLandmarks);
-  for (let landmark of poseCoords) {
+  for (let landmark in poseCoords) {
+    const pos = poseCoords[landmark].position;
     context.beginPath();
     context.arc(
-      scale([0, 1], [0, imageWidth])(landmark.position.x),
-      scale([0, 1], [0, imageHeight])(landmark.position.y),
+      scale([0, 1], [0, imageWidth])(pos.x),
+      scale([0, 1], [0, imageHeight])(pos.y),
       3,
       0,
       2 * Math.PI,
