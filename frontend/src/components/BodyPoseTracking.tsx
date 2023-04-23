@@ -1,7 +1,9 @@
 import React, { Suspense } from "react";
 import { Canvas } from "@react-three/fiber";
 import { FemaleModel } from "./FemaleBot";
-import { Model } from "./Model";
+// import { Model } from "./Model";
+// import { Model } from "./ModelBlenderY";
+import { Model } from "./ModelBlenderZ";
 import { Stats, OrbitControls, Bounds } from "@react-three/drei";
 import { useState, useEffect } from "react";
 import { Holistic } from "@mediapipe/holistic";
@@ -51,8 +53,8 @@ export const BodyPoseTracking = () => {
       enableSegmentation: true,
       smoothSegmentation: true,
       refineFaceLandmarks: true,
-      minDetectionConfidence: 0.5,
-      minTrackingConfidence: 0.5,
+      minDetectionConfidence: 0.4,
+      minTrackingConfidence: 0.4,
     });
 
     holistic.onResults(onResults);
@@ -85,9 +87,11 @@ export const BodyPoseTracking = () => {
       >
         <ambientLight />
         <Suspense fallback={null}>
-          {isLoaded ? <Model rotations={rotations} /> : "Model Loading..."}
+          {isLoaded ? <Model /> : "Model Loading..."}
         </Suspense>
         <OrbitControls makeDefault />
+        <axesHelper></axesHelper>{" "}
+        {/*rotations={rotations} The X axis is red. The Y axis is green. The Z axis is blue. */}
         <Stats />
       </Canvas>
 

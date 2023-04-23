@@ -163,7 +163,7 @@ const armJointsCoords = (poselm2D: any) => {
     poselm2D
   );
   const leftElbow = vectorFromLandmark(PoseLandmarks.LeftElbow, poselm2D);
-  const rightElbow = vectorFromLandmark(PoseLandmarks.RightShoulder, poselm2D);
+  const rightElbow = vectorFromLandmark(PoseLandmarks.RightElbow, poselm2D);
   const leftWrist = vectorFromLandmark(PoseLandmarks.LeftWrist, poselm2D);
   const rightWrist = vectorFromLandmark(PoseLandmarks.RightWrist, poselm2D);
   const leftIndex = vectorFromLandmark(PoseLandmarks.LeftIndex, poselm2D);
@@ -226,7 +226,7 @@ const initPoseJoint = (position: Vector): JointPose => ({
  * Convert rotation matrix to quaternion
  * https://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/
  * @param matrix : rotation matrix
- * @returns {Quaternion}: quaternion of the form [qw, qx, qy, qz]
+ * @returns {Quaternion}: quaternion of the form [qx, qy, qz, qw]
  */
 const rotationMatrixToQuaternion = (matrix: Matrix3x3): Quaternion => {
   let q: Quaternion = [0, 0, 0, 0];
@@ -313,6 +313,8 @@ const findPoseRotation = (poselm2D: any, poselm3D: any) => {
   let rightEar = poseCoords[BodyPartNames.RIGHT_EAR].position;
   let leftClavicle = poseCoords[BodyPartNames.LEFT_CLAVICLE].position;
   let rightClavicle = poseCoords[BodyPartNames.RIGHT_CLAVICLE].position;
+  let leftElbow = poseCoords[BodyPartNames.LEFT_LOWER_ARM].position;
+  let rightElbow = poseCoords[BodyPartNames.RIGHT_LOWER_ARM].position;
   // for (let coord of poseCoords) {
   //   if (coord.name == BodyPartNames.SPINE) {
   //     lowerSpine = coord.position;
@@ -412,6 +414,74 @@ const findPoseRotation = (poselm2D: any, poselm3D: any) => {
     getRotationMatrix(right, up, forward)
   );
 
+  // shoulders
+  console.log(neck, rightShoulder, rightElbow);
+  console.log(quatFromVectors(rightShoulder, rightElbow));
+  globalUp = Vector.normalize(rightShoulder.subtract(leftShoulder));
+
+  // Left shoulder joint rotation
+  forward = Vector.normalize(leftElbow.subtract(leftShoulder));
+  right = Vector.normalize(Vector.cross(up, forward));
+  up = Vector.cross(forward, right);
+
+  const quaternionLeftShoulder = rotationMatrixToQuaternion(
+    getRotationMatrix(right, up, forward)
+  );
+
+  // Right shoulder joint rotation
+  forward = Vector.normalize(rightElbow.subtract(rightShoulder));
+  right = Vector.normalize(Vector.cross(up, forward));
+  up = Vector.cross(forward, right);
+
+  const quaternionRightShoulder = rotationMatrixToQuaternion(
+    getRotationMatrix(right, up, forward)
+  );
+
+  // const left_bone_vector = Vector.normalize(leftElbow.subtract(leftShoulder));
+  // const right_bone_vector = Vector.normalize(
+  //   rightElbow.subtract(rightShoulder)
+  // );
+
+  // const defaultLeftShoulderVector = new Vector(-1, 0, 0); // Points along the negative X-axis
+  // const defaultRightShoulderVector = new Vector(1, 0, 0); // Points along the positive X-axis
+
+  // const defaultLeftShoulderVectorNormalized = Vector.normalize(
+  //   defaultLeftShoulderVector
+  // );
+  // const defaultRightShoulderVectorNormalized = Vector.normalize(
+  //   defaultRightShoulderVector
+  // );
+
+  // const leftShoulderRelativeRotation = quatFromUnitVectors(
+  //   defaultLeftShoulderVectorNormalized,
+  //   left_bone_vector
+  // );
+  // const rightShoulderRelativeRotation = quatFromUnitVectors(
+  //   defaultRightShoulderVectorNormalized,
+  //   right_bone_vector
+  // );
+
+  // const leftShoulderTPoseQuaternion: Quaternion = [
+  //   0.999,
+  //   -0.031,
+  //   -0.000241,
+  //   0.033,
+  // ];
+  // const rightShoulderTPoseQuaternion: Quaternion = [
+  //   0.999,
+  //   -0.031,
+  //   0.000268,
+  //   -0.036,
+  // ];
+  // const quaternionLeftShoulder = quatMultiply(
+  //   leftShoulderTPoseQuaternion,
+  //   leftShoulderRelativeRotation
+  // );
+  // const quaternionRightShoulder = quatMultiply(
+  //   rightShoulderTPoseQuaternion,
+  //   rightShoulderRelativeRotation
+  // );
+
   poseCoords[BodyPartNames.HIP].rotation = quaternionHip;
   poseCoords[BodyPartNames.SPINE1].rotation = quaternionSpine1;
   poseCoords[BodyPartNames.SPINE].rotation = quaternionSpine;
@@ -419,31 +489,85 @@ const findPoseRotation = (poselm2D: any, poselm3D: any) => {
   poseCoords[BodyPartNames.NECK].rotation = quaternionNeck;
   poseCoords[BodyPartNames.LEFT_CLAVICLE].rotation = quaternionLeftClavicle;
   poseCoords[BodyPartNames.RIGHT_CLAVICLE].rotation = quaternionRightClavicle;
+  poseCoords[BodyPartNames.LEFT_UPPER_ARM].rotation = quaternionLeftShoulder;
+  poseCoords[BodyPartNames.RIGHT_UPPER_ARM].rotation = quaternionRightShoulder;
 
-  // for (let coord of poseCoords) {
-  //   if (coord.name == BodyPartNames.HIP) {
-  //     coord.rotation = quaternionHip;
-  //   }
-  //   if (coord.name == BodyPartNames.SPINE) {
-  //     coord.rotation = quaternionSpine;
-  //   }
-  //   if (coord.name == BodyPartNames.SPINE1) {
-  //     coord.rotation = quaternionSpine1;
-  //   }
-  //   if (coord.name == BodyPartNames.SPINE2) {
-  //     coord.rotation = quaternionSpine2;
-  //   }
-  //   if (coord.name == BodyPartNames.NECK) {
-  //     coord.rotation = quaternionNeck;
-  //   }
-  //   if (coord.name == BodyPartNames.LEFT_CLAVICLE) {
-  //     coord.rotation = quaternionLeftClavicle;
-  //   }
-  //   if (coord.name == BodyPartNames.RIGHT_CLAVICLE) {
-  //     coord.rotation = quaternionRightClavicle;
-  //   }
-  // }
   return poseCoords;
 };
+
+function quatFromVectors(source: Vector, destination: Vector): Quaternion {
+  const sourceNormalized = Vector.normalize(source);
+  const destinationNormalized = Vector.normalize(destination);
+
+  const cross = Vector.cross(sourceNormalized, destinationNormalized);
+  const dot = sourceNormalized.dot(destinationNormalized);
+
+  const quaternion: Quaternion = [cross.x, cross.y, cross.z, dot + 1];
+
+  return quatNormalize(quaternion);
+}
+
+function quatFromUnitVectors(source: Vector, target: Vector): Quaternion {
+  const EPSILON = 0.000001;
+
+  let r = source.dot(target) + 1;
+
+  let result: Quaternion = [0, 0, 0, 0];
+
+  if (r < EPSILON) {
+    r = 0;
+
+    if (Math.abs(source.x) > Math.abs(source.z)) {
+      result[0] = -source.y;
+      result[1] = source.x;
+      result[2] = 0;
+      result[3] = r;
+    } else {
+      result[0] = 0;
+      result[1] = -source.z;
+      result[2] = source.y;
+      result[3] = r;
+    }
+  } else {
+    const cross = Vector.cross(source, target);
+    result[0] = cross.x;
+    result[1] = cross.y;
+    result[2] = cross.z;
+    result[3] = r;
+  }
+
+  return quatNormalize(result);
+}
+
+function quatNormalize(q: Quaternion): Quaternion {
+  const magnitude = Math.sqrt(
+    q[0] * q[0] + q[1] * q[1] + q[2] * q[2] + q[3] * q[3]
+  );
+  return [
+    q[0] / magnitude,
+    q[1] / magnitude,
+    q[2] / magnitude,
+    q[3] / magnitude,
+  ];
+}
+
+function quatMultiply(q1: Quaternion, q2: Quaternion): Quaternion {
+  const q1x = q1[0];
+  const q1y = q1[1];
+  const q1z = q1[2];
+  const q1w = q1[3];
+
+  const q2x = q2[0];
+  const q2y = q2[1];
+  const q2z = q2[2];
+  const q2w = q2[3];
+
+  const x = q1w * q2x + q1x * q2w + q1y * q2z - q1z * q2y;
+  const y = q1w * q2y - q1x * q2z + q1y * q2w + q1z * q2x;
+  const z = q1w * q2z + q1x * q2y - q1y * q2x + q1z * q2w;
+  const w = q1w * q2w - q1x * q2x - q1y * q2y - q1z * q2z;
+
+  return [x, y, z, w];
+}
 
 export { findPoseCoordinates, findPoseRotation };

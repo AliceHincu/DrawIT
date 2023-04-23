@@ -151,7 +151,7 @@ export function Model(props: any) {
   const mapSkeleton = () => {
     for (let child of nodes.Ch36.skeleton.bones) {
       if (child.name == "mixamorig1Hips") {
-        bones["Hips"] = child;
+        bones["Hip"] = child;
       }
       // if (child.name == 'Chest')        { bones['Chest'] = child }
 
@@ -161,8 +161,11 @@ export function Model(props: any) {
       if (child.name == "mixamorig1LeftForeArm") {
         bones["LeftLowerArm"] = child;
       }
-      if (child.name == "mixamorig1LeftShoulder") {
+      if (child.name == "mixamorig1LeftArm") {
         bones["LeftUpperArm"] = child;
+      }
+      if (child.name == "mixamorig1LeftShoulder") {
+        bones["LeftClavicle"] = child;
       }
       if (child.name == "mixamorig1LeftUpLeg") {
         bones["LeftUpperLeg"] = child;
@@ -177,8 +180,11 @@ export function Model(props: any) {
       if (child.name == "mixamorig1RightForeArm") {
         bones["RightLowerArm"] = child;
       }
-      if (child.name == "mixamorig1RightShoulder") {
+      if (child.name == "mixamorig1RightArm") {
         bones["RightUpperArm"] = child;
+      }
+      if (child.name == "mixamorig1RightShoulder") {
+        bones["RightClavicle"] = child;
       }
       if (child.name == "mixamorig1RightUpLeg") {
         bones["RightUpperLeg"] = child;
@@ -269,19 +275,16 @@ export function Model(props: any) {
   // rigRotation("LeftUpperArm", poseRig.LeftUpperArm, 1, 0.4);
   // rigRotation("LeftLowerArm", poseRig.LeftLowerArm, 1, 0.4);
 
+  const rigRotationQ2 = (name: any, q: any) => {
+    const quaternion = new THREE.Quaternion(q[0], q[1], -q[2], q[3]); // Replace x, y, z, and w with the actual quaternion values
+    const joint = bones[name];
+    joint.quaternion.slerp(quaternion, 0.3); // interpolate
+  };
+
   const rigRotationQ = (name: any, q: any) => {
     const quaternion = new THREE.Quaternion(q[0], q[1], q[2], q[3]); // Replace x, y, z, and w with the actual quaternion values
     const joint = bones[name];
     joint.quaternion.slerp(quaternion, 0.5); // interpolate
-    // // Store the original scale of the hip joint
-    // const originalScale = new THREE.Vector3();
-    // joint.getWorldScale(originalScale);
-
-    // // Apply the quaternion rotation
-    // joint.setRotationFromQuaternion(quaternion);
-
-    // // Reset the scale to the original values
-    // joint.scale.copy(originalScale.multiplyScalar(10));
   };
 
   const rigPositionQ = (name: any, p: any) => {
@@ -292,31 +295,38 @@ export function Model(props: any) {
 
   // console.log(props.rotations);
   //todo: get rid of if-elses and rename in blender the joints to mat=tch BodyPartsNames
-  for (let landmark in props.rotations) {
-    const jointPose = props.rotations[landmark];
-    if (landmark == "Hip") {
-      rigRotationQ("Hips", jointPose.rotation);
-      rigPositionQ("Hips", jointPose.position);
-    }
-    if (landmark == "Spine") {
-      rigRotationQ("Spine", jointPose.rotation);
-    }
-    if (landmark == "Spine1") {
-      rigRotationQ("Spine1", jointPose.rotation);
-    }
-    if (landmark == "Spine2") {
-      rigRotationQ("Spine2", jointPose.rotation);
-    }
-    if (landmark == "Neck") {
-      rigRotationQ("Neck", jointPose.rotation);
-    }
-    if (landmark == "RightClavicle") {
-      rigRotationQ("RightUpperArm", jointPose.rotation);
-    }
-    if (landmark == "LeftClavicle") {
-      rigRotationQ("LeftUpperArm", jointPose.rotation);
-    }
-  }
+  // for (let landmark in props.rotations) {
+  //   const jointPose = props.rotations[landmark];
+  //   if (landmark == "Hip") {
+  //     rigRotationQ("Hip", jointPose.rotation);
+  //     rigPositionQ("Hip", jointPose.position);
+  //   }
+  //   if (landmark == "Spine") {
+  //     rigRotationQ("Spine", jointPose.rotation);
+  //   }
+  //   if (landmark == "Spine1") {
+  //     rigRotationQ("Spine1", jointPose.rotation);
+  //   }
+  //   if (landmark == "Spine2") {
+  //     rigRotationQ("Spine2", jointPose.rotation);
+  //   }
+  //   if (landmark == "Neck") {
+  //     rigRotationQ("Neck", jointPose.rotation);
+  //   }
+  //   if (landmark == "LeftUpperArm") {
+  //     rigRotationQ2("LeftUpperArm", jointPose.rotation);
+  //   }
+  //   if (landmark == "RightUpperArm") {
+  //     console.log(jointPose.rotation);
+  //     rigRotationQ2("RightUpperArm", jointPose.rotation);
+  //   }
+  // if (landmark == "RightClavicle") {
+  //   rigRotationQ("RightClavicle", jointPose.rotation);
+  // }
+  // if (landmark == "LeftClavicle") {
+  //   rigRotationQ("LeftClavicle", jointPose.rotation);
+  // }
+  // }
 
   return (
     // @ts-ignore
